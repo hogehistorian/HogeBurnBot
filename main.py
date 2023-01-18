@@ -27,7 +27,7 @@ def get_current_burn():
     print("Current Burn: " + str(current_burn))
     return current_burn
 
-#This function calls the raw value vaed for the last time get_current_burn was called that's by default saved in a csv file in the current working directory.
+#This function calls the raw value for the last time get_current_burn was called that's by default saved in a csv file in the current working directory.
 def get_last_daily_burn():
     with open('./burnRecord.csv') as f:
         csv_f = csv.reader(f)

@@ -16,9 +16,12 @@ TG_API_KEY = os.environ.get("TG_API_KEY")
 MAIN_GRP_ID = os.environ.get("MAIN_GRP_ID")
 TEST_GRP_ID = os.environ.get("TEST_GRP_ID")
 
+#Offical $HOGE ETH wallet address
+HOGE_ETH_ADDR = '0xfad45e47083e4607302aa43c65fb3106f1cd7607'
+
 #This function makes an API call to etherscan and parses the JSON response for the current amount of $HOGE in the dead address wallet.
 def get_current_burn():
-    url = "https://api.etherscan.io/api?module=account&action=tokenbalance&contractaddress=0xfad45e47083e4607302aa43c65fb3106f1cd7607&address=0x000000000000000000000000000000000000dead&tag=latest&apikey=" + ETHSCAN_KEY
+    url = "https://api.etherscan.io/api?module=account&action=tokenbalance&contractaddress=" + HOGE_ETH_ADDR + "&address=0x000000000000000000000000000000000000dead&tag=latest&apikey=" + ETHSCAN_KEY
     res = requests.post(url, json={"key": "value"})
     current_burn = int(res.json()['result'])
     print("Current Burn: " + str(current_burn))
@@ -65,14 +68,16 @@ def post_to_twitter(burn_difference_formatted):
 def post_to_telegram(burn_difference_formatted):
     raw_total_burn = get_current_burn()
     total_burn = format_burn(raw_total_burn)
-    requests.post("https://api.telegram.org/bot" + TG_API_KEY + "/sendMessage?chat_id=" + str(MAIN_GRP_ID) + "&text=" +  burn_difference_formatted + " $HOGE burned from circulation in the past 24 hours" + " " + u"\U0001F525" + "\n\n" + total_burn + " $HOGE has been burned in total! " + u"\U0001F525")
+    #requests.post("https://api.telegram.org/bot" + TG_API_KEY + "/sendMessage?chat_id=" + str(MAIN_GRP_ID) + "&text=" +  burn_difference_formatted + " $HOGE burned from circulation in the past 24 hours" + " " + u"\U0001F525" + "\n\n" + total_burn + " $HOGE has been burned in total! " + u"\U0001F525")
+    requests.post("https://api.telegram.org/bot" + TG_API_KEY + "/sendMessage?chat_id=" + str(MAIN_GRP_ID) + "&text=" + "Hello World!")
     
 #This function posts the daily burn  to the test telegram group
 def post_to_telegram_test(burn_difference_formatted):    
     raw_total_burn = get_current_burn()
     total_burn = format_burn(raw_total_burn)
     requests.post("https://api.telegram.org/bot" + TG_API_KEY + "/sendMessage?chat_id=" + str(TEST_GRP_ID) + "&text=" +  burn_difference_formatted + " $HOGE burned from circulation in the past 24 hours" + " " + u"\U0001F525" + "\n\n" + total_burn + " $HOGE has been burned in total! " + u"\U0001F525")
-
+    
+#This function updates the CSV file tracking the previous day's burn.
 def update_burn_csv():
     current_burn = get_current_burn()
     with open('./burnRecord.csv', 'w') as f:
@@ -82,14 +87,19 @@ def update_burn_csv():
 def main():
     current_burn = get_current_burn()
     last_daily_burn = get_last_daily_burn()
+    #Post to twitter
     burn_difference = calculate_burn_difference()
     burn_difference_formatted = format_burn(burn_difference)
-
-    #post_to_twitter(burn_difference_formatted)
-    #post_to_telegram(burn_difference_formatted)
+    post_to_twitter(burn_difference_formatted)
+    #Post to TG
+    burn_difference = calculate_burn_difference()
+    burn_difference_formatted = format_burn(burn_difference)
+    post_to_telegram(burn_difference_formatted)
+    #Post to TG test channel
     burn_difference = calculate_burn_difference()
     burn_difference_formatted = format_burn(burn_difference)
     post_to_telegram_test(burn_difference_formatted)
+    #Update burnRecord.csv
     update_burn_csv()
 
 if __name__ == "__main__":
